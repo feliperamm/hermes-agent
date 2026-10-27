@@ -33,8 +33,9 @@ jobs:
       - name: Exercise read-only failure path
         shell: pwsh
         run: |
-          & ./scripts/ops/Test-HermesCore.ps1
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./scripts/ops/Test-HermesCore.ps1
           $code = $LASTEXITCODE
           if ($code -ne 0 -and $code -ne 2) {
             throw "Unexpected checker exit code: $code"
           }
+          Write-Host "Checker returned its documented diagnostic exit code: $code"
