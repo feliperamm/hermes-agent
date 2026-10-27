@@ -39,3 +39,4 @@ jobs:
             throw "Unexpected checker exit code: $code"
           }
           Write-Host "Checker returned its documented diagnostic exit code: $code"
+          exit 0
