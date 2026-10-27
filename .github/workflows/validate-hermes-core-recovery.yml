@@ -1,0 +1,40 @@
+name: Validate hermes-core recovery checker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@f548e57e544e1ff5a4c46bf1e1b8685f8e4a348a # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Parse PowerShell
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path 'scripts/ops/Test-HermesCore.ps1'),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.ToString() }
+            exit 1
+          }
+
+      - name: Exercise read-only failure path
+        shell: pwsh
+        run: |
+          & ./scripts/ops/Test-HermesCore.ps1
+          $code = $LASTEXITCODE
+          if ($code -ne 0 -and $code -ne 2) {
+            throw "Unexpected checker exit code: $code"
+          }
