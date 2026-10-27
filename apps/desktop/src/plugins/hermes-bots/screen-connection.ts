@@ -175,9 +175,12 @@ export async function resolveScreenWsUrl(bot: RosterRow, ticket: string): Promis
   // The /api/ws credential authenticated the RPC that minted the display ticket;
   // the bridge authenticates on the ticket alone, so the gateway credential is
   // dropped rather than spending a second one-shot ticket.
+  // The display ticket lives in the isolated backend process that handled display.observe.
+  // Route the sibling WebSocket through that same transport-profile pool key; targetProfile
+  // scopes the RPC *inside* that backend but may name a different isolated process over SSH.
   const url = new URL(
     await resolveSiblingWsUrl(
-      { connectionId: route?.connectionId ?? null, profile: route?.targetProfile ?? route?.profile ?? bot.name },
+      { connectionId: route?.connectionId ?? null, profile: route?.profile ?? bot.name },
       '/api/display/ws',
       {
         stripGatewayCredential: true
